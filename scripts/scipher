@@ -101,14 +101,14 @@ trap "secure_exit" SIGINT SIGTERM SIGKILL
 # Encrypt the plaintext version of the file.
 function encrypt {
     "$PROGRAM_FILE" "$PLAINTEXT_FILE" "$ENCRYPTED_FILE" encrypt "$PASSWORD"
-    [[ $? -ne 0 ]] && safe_exit 1
+    [[ $? -ne 0 ]] && secure_exit 1
 }
 
 
 # Decrypt the file.
 function decrypt {
     "$PROGRAM_FILE" "$ENCRYPTED_FILE" "$PLAINTEXT_FILE" decrypt "$PASSWORD"
-    [[ $? -ne 0 ]] && safe_exit 1
+    [[ $? -ne 0 ]] && secure_exit 1
 }
 
 

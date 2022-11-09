@@ -132,7 +132,7 @@ and to provide more functionalities.
 
 For example, it automatically handles the creation and destruction of the plain
 file, and its command is much simpler (no need to specify _mode_, _input file_,
-_output file_, ect...).
+_output file_, etc...).
 ```sh
 scipher [OPTION]...
 ```

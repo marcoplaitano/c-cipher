@@ -15,9 +15,9 @@
 
 
 
-##################################################
-#                    VARIABLES                   #
-##################################################
+################################################################################
+###   VARIABLES
+################################################################################
 
 # Program needed for encryption/decryption.
 readonly PROGRAM_FILE="$HOME/.local/bin/ccipher"
@@ -32,17 +32,13 @@ readonly ENCRYPTED_FILE="$MAIN_FOLDER"/encrypted.dat
 readonly PLAINTEXT_FILE="$MAIN_FOLDER"/.plain.txt
 
 # Text editor to edit the file in.
-readonly EDITOR="nvim"
-
-# If set to TRUE the terminal echo is suppressed while typing out the master
-# password.
-readonly HIDE_TYPING="FALSE"
+readonly EDITOR=${EDITOR:="nano"}
 
 
 
-##################################################
-#                    FUNCTIONS                   #
-##################################################
+################################################################################
+###   FUNCTIONS
+################################################################################
 
 # Show a quick guide to explain what the script does and how it works.
 function show_help {
@@ -64,10 +60,13 @@ OPTIONS
     -h, --help
         Show help guide and exit.
 
+    --hide
+        Don't show the input while typing in the password.
+
     -w, --write
-        Edit the file.
-        This is the option to use the first time you run the script; it will
-        create the file and let you write something in it.
+        Edit the file to add/modify entries.
+        This is also the option to use the first time you run the script; it
+        will create the file and let you write something in it.
 
     -r [STRING], --read [STRING]
         Show a decrypted version of the entire file or of any lines containing
@@ -77,13 +76,10 @@ OPTIONS
         Decrypt the file and save a copy of the plaintext.
         If you only need to take a quick look, consider using '--read' instead.
 
-    If no option is given the default behaviour is to show the contents of the
-    entire file, as in '--read'.
-
 CONFIGURATION
-    A few parameters, like the editor of choice, whether to hide the password or
-    the files' paths, can be modified inside the script's file.
-    Only modify lines in the 'VARIABLES' section." | more -d
+    A few parameters, like the editor of choice or the files' paths can be
+    modified inside the script's file.
+    NOTE: Only modify lines in the 'VARIABLES' section." | more -d
 }
 
 
@@ -91,11 +87,12 @@ CONFIGURATION
 # script.
 function secure_exit {
     [[ -f "$PLAINTEXT_FILE" ]] && rm "$PLAINTEXT_FILE"
+    clear
     exit $1
 }
 
 # Redirect any "quit" signal to the secure_exit function.
-trap "secure_exit" SIGINT SIGTERM SIGKILL
+trap "secure_exit" SIGINT SIGTERM
 
 
 # Encrypt the plaintext version of the file.
@@ -124,7 +121,7 @@ function input {
     done
 
     # Use 'X' as special input signifying exit.
-    [[ "$answer" == X ]] && exit 1
+    [[ "$answer" == X ]] && secure_exit 1
     echo "$answer"
 }
 
@@ -134,13 +131,11 @@ function ask_confirm {
     local prompt="$1"
     prompt=${prompt:="Yes or no? "}
 
-    ans=$(input "$prompt") || exit 2
+    ans=$(input "$prompt") || secure_exit 2
     case $ans in
         [yY] | [yY][eE][sS])
-            echo TRUE
             exit 0 ;;
         *)
-            echo FALSE
             exit 1 ;;
     esac
 }
@@ -175,7 +170,7 @@ function ask_path_to_file {
 
 # Ask the user to write the master password needed to encrypt/decrypt the data.
 function ask_password {
-    if [[ $HIDE_TYPING == TRUE ]]; then
+    if [[ -n $HIDE_TYPING ]]; then
         read -rsp "Password: " PASSWORD
         echo
     else
@@ -200,6 +195,9 @@ function action_read_file {
     decrypt
 
     local string="$1"
+
+    # Clear the screen to hide the password.
+    clear
 
     # If a string is given, show any lines containing it.
     if [[ -n $string ]]; then
@@ -271,9 +269,9 @@ function action_export_file {
 
 
 
-##################################################
-#                    MAIN BODY                   #
-##################################################
+################################################################################
+###   MAIN PROGRAM
+################################################################################
 
 # Parse command line arguments.
 while [[ -n $1 ]]; do
@@ -281,16 +279,24 @@ while [[ -n $1 ]]; do
         -h | --help)
             show_help
             exit 0 ;;
+        --hide)
+            HIDE_TYPING="TRUE"
+            shift ;;
         -e | --export)
             action="EXPORT"
-            break ;;
+            shift ;;
         -r | --read)
             action="READ"
-            [[ -n "$2" ]] && string="$2"
-            break ;;
+            # Add second argument as title to read if it is not another option
+            # starting with - (or --).
+            if [[ -n "$2" ]] && [[ "$2" != -* ]]; then
+                string="$2"
+                shift
+            fi
+            shift ;;
         -w | --write)
             action="WRITE"
-            break ;;
+            shift ;;
         *)
             echo "Argument '""$1""' not recognized."
             exit 1 ;;
@@ -321,14 +327,23 @@ if [[ ! -f "$ENCRYPTED_FILE" ]] && [[ $action != "WRITE" ]]; then
     echo "  inside this script."
     exit 1
 fi
-if [[ -z $EDITOR ]] || ! command -v "$EDITOR" >/dev/null 2>&1; then
-    echo "Text editor either not declared or not a valid command."
+# Check that the EDITOR variable is correctly set.
+if [[ -z $EDITOR ]]; then
+    echo "Text editor not declared."
     exit 1
 fi
+if ! command -v "$EDITOR" >/dev/null 2>&1; then
+    echo "Chosen text editor '""$EDITOR""' is not a valid command."
+    exit 1
+fi
+# There is no way to check whether the command is an actual text editor.
 
 
-# Default action, if none is specified, is to show the entire file.
-action=${action:="READ"}
+# If no action is specified show guide.
+if [[ -z $action ]]; then
+    show_help
+    exit 0
+fi
 
 # Execute the desired action.
 case $action in

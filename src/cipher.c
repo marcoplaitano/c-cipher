@@ -3,10 +3,8 @@
  * @author Marco Plaitano
  * @date 22 May 2022
  *
- * CCIPHER
+ * C-CIPHER
  * A program to encrypt/decrypt a file using the AES-CTR-256 cipher.
- *
- * Copyright 2022 Marco Plaitano
  */
 
 #include "cipher.h"
@@ -18,9 +16,18 @@
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 
-#include "util.h"
-
 #define BUFF_LEN 16
+
+
+/**
+ * @brief Free a pointer and set it to NULL.
+ * @param ptr: Pointer to free.
+ */
+static void secure_free(void *ptr) {
+    free(ptr);
+    ptr = NULL;
+}
+
 
 
 /**
@@ -43,25 +50,33 @@
  * @param out_file: Output file.
  * @return Integer value; either `0` (success) or `1` (failure).
  */
-static int IV_fill(unsigned char *IV, cipher_mode_e mode, FILE *in_file,
-            FILE *out_file)
+static int IV_fill(unsigned char *IV, cipher_mode mode, FILE *in_file,
+                   FILE *out_file)
 {
     /* Reset the last 8 bytes. */
     memset(IV + 8, 0, 8);
-    if (*((int *)IV + 8) != 0 || *((int *)(IV + 12)) != 0)
-        return error("Could not reset first 8 bytes of IV.");
+    if (*((int *)IV + 8) != 0 || *((int *)(IV + 12)) != 0) {
+        fprintf(stderr, "Could not reset first 8 bytes of IV.\n");
+        return EXIT_FAILURE;
+    }
 
     if (mode == MODE_ENCRYPT) {
         /* Fill first 8 bytes with randomness and write them onto the file. */
-        if (!RAND_bytes(IV, 8))
-            return error("Could not generate random bytes for IV.");
-        if (fwrite(IV, 1, 8, out_file) < 8)
-            return error("Could not write 8 bytes to file '%s'.", out_file);
+        if (!RAND_bytes(IV, 8)) {
+            fprintf(stderr, "Could not generate random bytes for IV.\n");
+            return EXIT_FAILURE;
+        }
+        if (fwrite(IV, 1, 8, out_file) < 8) {
+            fprintf(stderr, "Could not write 8 bytes to '%s'.\n", out_file);
+            return EXIT_FAILURE;
+        }
     }
     else if (mode == MODE_DECRYPT) {
         /* Read first 8 bytes from the file. */
-        if (fread(IV, 1, 8, in_file) < 8)
-            return error("Could not read 8 bytes from file '%s'.", in_file);
+        if (fread(IV, 1, 8, in_file) < 8) {
+            fprintf(stderr, "Could not read 8 bytes from '%s'.\n", in_file);
+            return EXIT_FAILURE;
+        }
     }
 
     return 0;
@@ -70,10 +85,12 @@ static int IV_fill(unsigned char *IV, cipher_mode_e mode, FILE *in_file,
 
 
 int cipher(const char *password, const char *in_file_path,
-           const char *out_file_path, cipher_mode_e mode)
+           const char *out_file_path, cipher_mode mode)
 {
-    if (strcmp(in_file_path, out_file_path) == 0)
-        return error("Input File and Output File must be different.");
+    if (strcmp(in_file_path, out_file_path) == 0) {
+        fprintf(stderr, "Input File and Output File must be different.\n");
+        return EXIT_FAILURE;
+    }
 
     /* Return value. */
     int ret = 1;
@@ -81,46 +98,48 @@ int cipher(const char *password, const char *in_file_path,
     /* Allocate needed resources. */
     unsigned char *key = malloc(32);
     if (key == NULL) {
-        error("Could not allocate 32 bytes of memory for the key.");
+        fprintf(stderr, "Could not allocate 32 bytes of memory for the key.\n");
         goto error_alloc_key;
     }
     unsigned char *IV = malloc(16);
     if (IV == NULL) {
-        error("Could not allocate 16 bytes of memory for the IV.");
+        fprintf(stderr, "Could not allocate 16 bytes of memory for the IV.\n");
         goto error_alloc_IV;
     }
     unsigned char *in_buff = malloc(BUFF_LEN);
     if (in_buff == NULL) {
-        error("Could not allocate %d bytes for the input buffer.", BUFF_LEN);
+        fprintf(stderr, "Could not allocate %d bytes for the input buffer.\n",
+                        BUFF_LEN);
         goto error_alloc_in_buff;
     }
     unsigned char *out_buff = malloc(BUFF_LEN);
     if (out_buff == NULL) {
-        error("Could not allocate %d bytes for the output buffer.", BUFF_LEN);
+        fprintf(stderr, "Could not allocate %d bytes for the output buffer.\n",
+                        BUFF_LEN);
         goto error_alloc_out_buff;
     }
 
     /* Open file streams. */
     FILE *in_file = fopen(in_file_path, "rb");
     if (in_file == NULL) {
-        error("Could not open file '%s'.", in_file_path);
+        fprintf(stderr, "Could not open file '%s'.\n", in_file_path);
         goto error_open_in_file;
     }
     FILE *out_file = fopen(out_file_path, "wb");
     if (out_file == NULL) {
-        error("Could not open file '%s'.", out_file_path);
+        fprintf(stderr, "Could not open file '%s'.\n", out_file_path);
         goto error_open_out_file;
     }
 
     /* Create instance of AES-256-CTR cipher. */
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     if (ctx == NULL) {
-        error("Could not create instance of Cipher CTX.");
+        fprintf(stderr, "Could not create instance of Cipher CTX.\n");
         goto error_alloc_ctx;
     }
     EVP_CIPHER *cipher = EVP_CIPHER_fetch(NULL, "AES-256-CTR", NULL);
     if (cipher == NULL) {
-        error("Could not create instance of Cipher.");
+        fprintf(stderr, "Could not create instance of Cipher.\n");
         goto error_alloc_cipher;
     }
 
@@ -133,7 +152,7 @@ int cipher(const char *password, const char *in_file_path,
     }
 
     if (!EVP_EncryptInit_ex2(ctx, cipher, key, IV, NULL)) {
-        error("Operation EVP_EncryptInit_ex2 not successful.");
+        fprintf(stderr, "Operation EVP_EncryptInit_ex2 not successful.\n");
         goto error;
     }
 
@@ -150,20 +169,22 @@ int cipher(const char *password, const char *in_file_path,
         if (num_read <= 0)
             break;
         if (!EVP_EncryptUpdate(ctx, out_buff, &out_len, in_buff, num_read)) {
-            error("Operation EVP_EncryptUpdate not successful.");
+            fprintf(stderr, "Operation EVP_EncryptUpdate not successful.\n");
             goto error;
         }
         if (fwrite(out_buff, 1, out_len, out_file) < out_len) {
-            error("Could not write %d bytes to file '%s'.", out_len, out_file);
+            fprintf(stderr, "Could not write %d bytes to file '%s'.\n",
+                            out_len, out_file);
             goto error;
         }
     }
     if (!EVP_EncryptFinal_ex(ctx, out_buff, &out_len)) {
-        error("Operation EVP_EncryptFinal_ex not successful.");
+        fprintf(stderr, "Operation EVP_EncryptFinal_ex not successful.\n");
         goto error;
     }
     if (fwrite(out_buff, 1, out_len, out_file) < out_len) {
-        error("Could not write %d bytes to file '%s'.", out_len, out_file);
+        fprintf(stderr, "Could not write %d bytes to file '%s'.\n",
+                        out_len, out_file);
         goto error;
     }
 

@@ -8,10 +8,8 @@
 #         an encrypted file containing passwords and credentials (or any other
 #         sensible information).
 #
-# CCIPHER
+# C-CIPHER
 # A program to encrypt/decrypt a file using the AES-CTR-256 cipher.
-#
-# Copyright 2022 Marco Plaitano
 
 
 

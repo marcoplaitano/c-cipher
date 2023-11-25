@@ -2,10 +2,8 @@
 # Author: Marco Plaitano
 # Date:   22 May 2022
 #
-# CCIPHER
+# C-CIPHER
 # A program to encrypt/decrypt a file using the AES-CTR-256 cipher.
-#
-# Copyright 2022 Marco Plaitano
 
 BIN_DIR := bin
 BUILD_DIR := build

@@ -3,10 +3,8 @@
  * @author Marco Plaitano
  * @date 22 May 2022
  *
- * CCIPHER
+ * C-CIPHER
  * A program to encrypt/decrypt a file using the AES-CTR-256 cipher.
- *
- * Copyright 2022 Marco Plaitano
  */
 
 #ifndef CIPHER_H
@@ -17,7 +15,7 @@
 typedef enum {
     MODE_ENCRYPT,
     MODE_DECRYPT
-} cipher_mode_e;
+} cipher_mode;
 
 
 /**
@@ -30,11 +28,11 @@ typedef enum {
  * @param in_file_path: Path to the input file.
  * @param out_file_path: Path to the output file. Must be different from
  *                       input_file.
- * @param mode: Operative mode for the cipher; see #cipher_mode_e.
+ * @param mode: Operative mode for the cipher; see #cipher_mode.
  * @return Integer value; either `0` (success) or `1` (failure).
  */
 int cipher(const char *password, const char *in_file_path,
-           const char *out_file_path, cipher_mode_e mode);
+           const char *out_file_path, cipher_mode mode);
 
 
 #endif /* CIPHER_H */

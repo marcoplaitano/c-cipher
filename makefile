@@ -16,7 +16,7 @@ CLIBS = -lcrypto -lssl
 
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
-EXEC := bin/ccipher
+EXEC := bin/cipher
 
 
 # Default target: create main executable.
@@ -29,11 +29,11 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
-.PHONY: ccipher dirs clean
+.PHONY: cipher dirs clean
 
 
 # Compile and create main executable, same as default target.
-ccipher: $(EXEC)
+cipher: $(EXEC)
 
 # Create needed directories if they do not already exist.
 dirs:

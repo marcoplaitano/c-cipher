@@ -72,9 +72,8 @@ To install it globally:
 sudo make install
 ```
 
-_**Note:** this will simply copy the executable to `/usr/local/bin/` and the
-manpage to `usr/local/man/`._
-
+This will simply copy the executable to `/usr/local/bin/` and the manpage to
+`usr/local/man/`.  
 Uninstall with:
 
 ```sh

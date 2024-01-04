@@ -8,7 +8,6 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "cipher.h"
@@ -27,35 +26,28 @@
 
 
 int main(int argc, char **argv) {
-    if (argc < NUM_ARGS) {
-        fprintf(stderr, "Wrong number of arguments; check the README file.\n");
-        return EXIT_FAILURE;
+    if (argc != NUM_ARGS) {
+        fprintf(stderr, "Usage: bin/cipher in_file out_file mode password\n");
+        return 1;
     }
-
     if (strcmp(IN_FILE, OUT_FILE) == 0) {
         fprintf(stderr, "Input File and Output File must be different.\n");
-        return EXIT_FAILURE;
+        return 1;
     }
-
     if (strlen(PASSWORD) < 1) {
         fprintf(stderr, "Password must be a non-empty string.\n");
-        return EXIT_FAILURE;
+        return 1;
     }
 
     cipher_mode mode;
-    if (strcmp(MODE, "encrypt") == 0)
+    if (strcmp(MODE, "encrypt") == 0 || strcmp(MODE, "e") == 0)
         mode = MODE_ENCRYPT;
-    else if (strcmp(MODE, "decrypt") == 0)
+    else if (strcmp(MODE, "decrypt") == 0 || strcmp(MODE, "d") == 0)
         mode = MODE_DECRYPT;
     else {
         fprintf(stderr, "Mode '%s' is unrecognized.\n", MODE);
-        return EXIT_FAILURE;
+        return 1;
     }
 
-    if (cipher(PASSWORD, IN_FILE, OUT_FILE, mode)) {
-        fprintf(stderr, "%sion failed.\n", MODE);
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
+    return cipher(PASSWORD, IN_FILE, OUT_FILE, mode);
 }

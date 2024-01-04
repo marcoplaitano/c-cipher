@@ -90,7 +90,7 @@ The program needs the following 4 command line arguments, in order:
 + `out_file`  
     Output file storing the result
 + `mode`  
-    A string: either **encrypt**, or **decrypt**
+    A string: either **encrypt**, **e**, **decrypt** or **d**
 + `password`  
     A string chosen by the user
 
@@ -108,16 +108,16 @@ It is at this point that you must choose the **password** to use. It can contain
 any ASCII character and can be of any (reasonable) length.
 
 ```sh
-ccipher input.txt private.dat encrypt Password123
+ccipher input.txt private.dat e Password123
 ```
 
 The following times, the plaintext version can be recreated with the command:
 
 ```sh
-ccipher private.dat output.txt decrypt Password123
+ccipher private.dat output.txt d Password123
 ```
 
-Notice how the two paths have been swapped, the mode is now **de**crypt and the
+Notice how the two paths have been swapped, the mode is now **d**ecrypt and the
 password remains the same.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

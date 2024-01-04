@@ -10,7 +10,6 @@
 #include "cipher.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -35,7 +34,7 @@ static void secure_free(void *ptr) {
  *        for encryption or decryption.
  *
  * The following statements assume the bits are in big-endian order.
- * The Initialization Vector is a string of `n = 16` bytes. `n` is also the
+ * The IV (Initialization Vector) is a string of `n = 16` bytes. `n` is also the
  * cipher's block length.
  * The last (LSB) 8 bytes contain a counter which will be incremented at every
  * new encrypted block.
@@ -57,25 +56,25 @@ static int IV_fill(unsigned char *IV, cipher_mode mode, FILE *in_file,
     memset(IV + 8, 0, 8);
     if (*((int *)IV + 8) != 0 || *((int *)(IV + 12)) != 0) {
         fprintf(stderr, "Could not reset first 8 bytes of IV.\n");
-        return EXIT_FAILURE;
+        return 1;
     }
 
     if (mode == MODE_ENCRYPT) {
         /* Fill first 8 bytes with randomness and write them onto the file. */
         if (!RAND_bytes(IV, 8)) {
             fprintf(stderr, "Could not generate random bytes for IV.\n");
-            return EXIT_FAILURE;
+            return 1;
         }
         if (fwrite(IV, 1, 8, out_file) < 8) {
-            fprintf(stderr, "Could not write 8 bytes to '%s'.\n", out_file);
-            return EXIT_FAILURE;
+            fprintf(stderr, "Could not write 8 bytes to file.\n");
+            return 1;
         }
     }
     else if (mode == MODE_DECRYPT) {
         /* Read first 8 bytes from the file. */
         if (fread(IV, 1, 8, in_file) < 8) {
-            fprintf(stderr, "Could not read 8 bytes from '%s'.\n", in_file);
-            return EXIT_FAILURE;
+            fprintf(stderr, "Could not read 8 bytes from file.\n");
+            return 1;
         }
     }
 
@@ -89,7 +88,7 @@ int cipher(const char *password, const char *in_file_path,
 {
     if (strcmp(in_file_path, out_file_path) == 0) {
         fprintf(stderr, "Input File and Output File must be different.\n");
-        return EXIT_FAILURE;
+        return 1;
     }
 
     /* Return value. */
@@ -108,14 +107,12 @@ int cipher(const char *password, const char *in_file_path,
     }
     unsigned char *in_buff = malloc(BUFF_LEN);
     if (in_buff == NULL) {
-        fprintf(stderr, "Could not allocate %d bytes for the input buffer.\n",
-                        BUFF_LEN);
+        fprintf(stderr, "Could not allocate %d bytes for the input buffer.\n", BUFF_LEN);
         goto error_alloc_in_buff;
     }
     unsigned char *out_buff = malloc(BUFF_LEN);
     if (out_buff == NULL) {
-        fprintf(stderr, "Could not allocate %d bytes for the output buffer.\n",
-                        BUFF_LEN);
+        fprintf(stderr, "Could not allocate %d bytes for the output buffer.\n", BUFF_LEN);
         goto error_alloc_out_buff;
     }
 
@@ -152,7 +149,7 @@ int cipher(const char *password, const char *in_file_path,
     }
 
     if (!EVP_EncryptInit_ex2(ctx, cipher, key, IV, NULL)) {
-        fprintf(stderr, "Operation EVP_EncryptInit_ex2 not successful.\n");
+        fprintf(stderr, "Error in EVP_EncryptInit_ex2.\n");
         goto error;
     }
 
@@ -169,22 +166,22 @@ int cipher(const char *password, const char *in_file_path,
         if (num_read <= 0)
             break;
         if (!EVP_EncryptUpdate(ctx, out_buff, &out_len, in_buff, num_read)) {
-            fprintf(stderr, "Operation EVP_EncryptUpdate not successful.\n");
+            fprintf(stderr, "Error in EVP_EncryptUpdate.\n");
             goto error;
         }
         if (fwrite(out_buff, 1, out_len, out_file) < out_len) {
             fprintf(stderr, "Could not write %d bytes to file '%s'.\n",
-                            out_len, out_file);
+                            out_len, out_file_path);
             goto error;
         }
     }
     if (!EVP_EncryptFinal_ex(ctx, out_buff, &out_len)) {
-        fprintf(stderr, "Operation EVP_EncryptFinal_ex not successful.\n");
+        fprintf(stderr, "Error in EVP_EncryptFinal_ex.\n");
         goto error;
     }
     if (fwrite(out_buff, 1, out_len, out_file) < out_len) {
         fprintf(stderr, "Could not write %d bytes to file '%s'.\n",
-                        out_len, out_file);
+                        out_len, out_file_path);
         goto error;
     }
 

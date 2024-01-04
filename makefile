@@ -28,7 +28,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
-.PHONY: ccipher install dirs clean
+.PHONY: ccipher install uninstall dirs clean
 
 
 # Compile and create main executable, same as default target.
@@ -41,6 +41,11 @@ install: ccipher
 	mkdir -p /usr/local/man/man1
 	cp ccipher.1 /usr/local/man/man1/
 	chmod 644 /usr/local/man/man1/ccipher.1
+
+# Delete executable and man page.
+uninstall:
+	rm /usr/local/bin/ccipher
+	rm /usr/local/man/man1/ccipher.1
 
 # Create needed directories if they do not already exist.
 dirs:

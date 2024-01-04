@@ -16,30 +16,32 @@ CLIBS = -lcrypto -lssl
 
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
-EXEC := bin/cipher
+EXEC := bin/ccipher
 
 
 # Default target: create main executable.
 $(EXEC): dirs $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(CLIBS) -o $@
 
-
 # Create object files.
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
-.PHONY: cipher dirs clean
+.PHONY: ccipher install dirs clean
 
 
 # Compile and create main executable, same as default target.
-cipher: $(EXEC)
+ccipher: $(EXEC)
+
+# Compile and copy executable to user's local bin directory.
+install: ccipher
+	$(shell cp bin/ccipher ~/.local/bin/ccipher)
 
 # Create needed directories if they do not already exist.
 dirs:
 	$(shell if [ ! -d $(BIN_DIR) ]; then mkdir -p $(BIN_DIR); fi)
 	$(shell if [ ! -d $(BUILD_DIR) ]; then mkdir -p $(BUILD_DIR); fi)
-
 
 # Delete object files and executables.
 clean:

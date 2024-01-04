@@ -46,7 +46,8 @@ nothing about cryptography.
 
 <br>
 
-<sup id="f1">**1**</sup> The usage of a **PBKDF** (Password-Based Key Derivation Function) would further improve security.  
+<sup id="f1">**1**</sup> The usage of a **PBKDF** (Password-Based Key
+Derivation Function) would further improve security.  
 <sup id="f2">**2**</sup> In **big-endian** order.  
 <sup id="f3">**3**</sup> Similar concept to '[The Birthday Problem]'.
 
@@ -54,20 +55,32 @@ nothing about cryptography.
 
 ## Installation
 
-Take a look at the [dependencies] listed below, needed to compile the program.
+Take a look at the [dependencies] listed below.
+
+To download and compile the program:
 
 ```sh
 git clone https://github.com/marcoplaitano/c-cipher
 cd c-cipher
-make cipher
+make
 ```
+
+The executable file is `ccipher`.  
+To install it globally:
+
+```sh
+make install
+```
+
+_**Note:** this will simply copy the executable in `~/.local/bin`. Make sure the
+directory exists and is in `$PATH`._
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ## Usage
 
 ```sh
-./bin/cipher [in_file] [out_file] [mode] [password]
+ccipher [in_file] [out_file] [mode] [password]
 ```
 
 The program needs the following 4 command line arguments, in order:
@@ -77,7 +90,7 @@ The program needs the following 4 command line arguments, in order:
 + `out_file`  
     Output file storing the result
 + `mode`  
-    A string, either '**encrypt**' or '**decrypt**'
+    A string: either **encrypt**, or **decrypt**
 + `password`  
     A string chosen by the user
 
@@ -90,19 +103,18 @@ runtime._
 
 The first time you run the program, the `in_file` should be the plain text file
 containing the private information.  
-The output file will store the encrypted version of it.
-
+The output file will store the encrypted version of it.  
 It is at this point that you must choose the **password** to use. It can contain
 any ASCII character and can be of any (reasonable) length.
 
 ```sh
-./bin/cipher input.txt private.dat encrypt myPassword_123
+ccipher input.txt private.dat encrypt Password123
 ```
 
 The following times, the plaintext version can be recreated with the command:
 
 ```sh
-./bin/cipher private.dat output.txt decrypt myPassword_123
+ccipher private.dat output.txt decrypt Password123
 ```
 
 Notice how the two paths have been swapped, the mode is now **de**crypt and the

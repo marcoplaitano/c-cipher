@@ -27,7 +27,7 @@
 
 int main(int argc, char **argv) {
     if (argc != NUM_ARGS) {
-        fprintf(stderr, "Usage: bin/cipher in_file out_file mode password\n");
+        fprintf(stderr, "Usage: ./ccipher in-file out-file mode password\n");
         return 1;
     }
     if (strcmp(IN_FILE, OUT_FILE) == 0) {

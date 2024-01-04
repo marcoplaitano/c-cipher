@@ -34,14 +34,18 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 # Compile and create main executable, same as default target.
 ccipher: $(EXEC)
 
-# Compile and copy executable to user's local bin directory.
+# Compile, then copy executable to /usr/local/bin and manpage to /usr/local/man
 install: ccipher
-	$(shell cp bin/ccipher ~/.local/bin/ccipher)
+	cp $(EXEC) /usr/local/bin/ccipher
+	chmod 755 /usr/local/bin/ccipher
+	mkdir -p /usr/local/man/man1
+	cp ccipher.1 /usr/local/man/man1/
+	chmod 644 /usr/local/man/man1/ccipher.1
 
 # Create needed directories if they do not already exist.
 dirs:
-	$(shell if [ ! -d $(BIN_DIR) ]; then mkdir -p $(BIN_DIR); fi)
-	$(shell if [ ! -d $(BUILD_DIR) ]; then mkdir -p $(BUILD_DIR); fi)
+	mkdir -p $(BIN_DIR)
+	mkdir -p $(BUILD_DIR)
 
 # Delete object files and executables.
 clean:

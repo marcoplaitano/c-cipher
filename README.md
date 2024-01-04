@@ -69,25 +69,25 @@ The executable file is `ccipher`.
 To install it globally:
 
 ```sh
-make install
+sudo make install
 ```
 
-_**Note:** this will simply copy the executable in `~/.local/bin`. Make sure the
-directory exists and is in `$PATH`._
+_**Note:** this will simply copy the executable to `/usr/local/bin/` and the
+manpage to `usr/local/man/`._
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ## Usage
 
 ```sh
-ccipher [in_file] [out_file] [mode] [password]
+ccipher in-file out-file mode password
 ```
 
 The program needs the following 4 command line arguments, in order:
 
-+ `in_file`  
++ `in-file`  
     Input file on which the cipher will be applied
-+ `out_file`  
++ `out-file`  
     Output file storing the result
 + `mode`  
     A string: either **encrypt**, **e**, **decrypt** or **d**
@@ -101,7 +101,7 @@ runtime._
 
 ### Example
 
-The first time you run the program, the `in_file` should be the plain text file
+The first time you run the program, the `in-file` should be the plain text file
 containing the private information.  
 The output file will store the encrypted version of it.  
 It is at this point that you must choose the **password** to use. It can contain

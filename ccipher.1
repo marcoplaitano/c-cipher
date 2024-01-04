@@ -1,0 +1,73 @@
+.TH CCIPHER 1 "04 Jan 2023" 1.0 "ccipher man page"
+
+.SH NAME
+.B ccipher
+\- C cipher
+
+.SH SYNOPSIS
+.B ccipher
+.I input-file
+.I output-file
+.I mode
+.I password
+
+.SH DESCRIPTION
+.B ccipher
+is a C utility program that can encrypt/decrypt a file using the AES-CTR-256 cipher.
+
+.SH OPTIONS
+.TP
+.I input-file
+The file to apply the cipher on.
+.TP
+.I output-file
+The file on which to write the output.
+.TP
+.I mode
+The mode in which the cipher should work: either
+.BR encrypt
+or
+.BR decrypt .
+.br
+It can be abbreviated to
+.BR e
+or
+.BR d .
+.TP
+.I password
+A string of letters, numbers and symbols.
+
+.SH USAGE
+The first time you run the program, the
+.I input-file
+should be the plain-text file containing the private information.
+.br
+The output file will store the encrypted version of it.
+.br
+You must choose the
+.I password
+to use. It can contain any ASCII character and can be of any (reasonable) length.
+
+.PP
+.in +4n
+.EX
+ccipher input.txt private.dat e Password123
+.EE
+.in
+.PP
+
+The following times, the plaintext version can be recreated with the command:
+
+.PP
+.in +4n
+.EX
+ccipher private.dat output.txt d Password123
+.EE
+.in
+.PP
+
+Notice how the two paths have been swapped, the mode is now decrypt and the
+password remains the same.
+
+.SH AUTHOR
+Marco Plaitano (marcoplaitano23@gmail.com)
